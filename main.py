@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 app = Flask(__name__)
 
 # Подключение к БД
-DATABASE_URL = os.environ.get('postgresql://severless_db_user:kwPhsZHf5N4VPORdaHxYxhi3V9Mc5TIM@dpg-d44g12khg0os73cfkv50-a/severless_db')
+DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
     url = urlparse(DATABASE_URL)
     conn = psycopg2.connect(
