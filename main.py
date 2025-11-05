@@ -4,8 +4,11 @@ import os
 
 app = Flask(__name__)
 
-# Подключение к БД
-DATABASE_URL = os.environ.get('DATABASE_URL')
+# Получаем URL базы данных из переменной окружения Render (DATABASE_URL)
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+# Подключаемся к базе данных
+conn = None
 if DATABASE_URL:
     try:
         conn = psycopg.connect(DATABASE_URL)
@@ -18,25 +21,25 @@ if DATABASE_URL:
                 )
             """)
             conn.commit()
+        print("✅ Database connected and table ready.")
     except Exception as e:
-        print("DB connection error:", e)
-        conn = None
+        print("❌ DB connection error:", e)
 else:
-    conn = None
+    print("⚠️ DATABASE_URL not set, running without DB.")
 
 
-@app.route('/')
-def hello():
-    return "Hello, Serverless with PostgreSQL! 🚀\n", 200, {'Content-Type': 'text/plain'}
+@app.route("/")
+def index():
+    return "🚀 Flask + Render + PostgreSQL works!"
 
 
-@app.route('/save', methods=['POST'])
+@app.route("/save", methods=["POST"])
 def save_message():
     if not conn:
         return jsonify({"error": "DB not connected"}), 500
 
-    data = request.get_json()
-    message = data.get('message', '') if data else ''
+    data = request.get_json(silent=True)
+    message = (data or {}).get("message", "")
 
     with conn.cursor() as cur:
         cur.execute("INSERT INTO messages (content) VALUES (%s)", (message,))
@@ -45,7 +48,7 @@ def save_message():
     return jsonify({"status": "saved", "message": message})
 
 
-@app.route('/messages')
+@app.route("/messages")
 def get_messages():
     if not conn:
         return jsonify({"error": "DB not connected"}), 500
@@ -58,5 +61,5 @@ def get_messages():
     return jsonify(messages)
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
